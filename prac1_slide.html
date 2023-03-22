@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>슬라이드+날씨 api</title>
+  <style>
+    *{
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    .slider{
+      position: absolute;
+      left: 10%;
+      top: 30%;
+      width: 80%;
+      height: 200px;
+      overflow: hidden; /* 안보이는 부분을 슬라이드로 */
+    }
+    .slider-b{
+      position: absolute;
+      top: 0;
+      left: 0;
+      height: 100%;
+      width: 200%;
+      display: grid;
+      grid-template-columns: repeat(6,1fr);/* grid 더 만들어보기 */
+      gap: 5px; /* 상하좌우 값 */
+      pointer-events: none;
+    }
+    .slider-item{
+      height: 100%;
+      background-color: khaki;
+    }
+  </style>
+</head>
+<body>
+  <div class="slider">
+    <div class="slider-b">
+      <div class="slider-item">
+        <div class="text"></div>
+      </div>
+      <div class="slider-item"></div>
+      <div class="slider-item"></div>
+      <div class="slider-item"></div>
+      <div class="slider-item"></div>
+    </div>
+  </div>
+  <script>
+    let slider=document.querySelector(".slider");
+    let bSlider=document.querySelector(".slider-b");
+    let pressed=false; //클릭 상태 체크
+    let starx //마우스 드래그 시작점 x좌표 
+    let x //마우스 드래그시 x좌표 체크
+    let text=document.querySelector(".text")
+
+    slider.addEventListener("mousedown",e=>{
+      pressed=true;
+      starx=e.offsetX-bSlider.offsetLeft
+      slider.style.cursor="grabbing"
+    });
+    slider.addEventListener("mouseenter",()=>{
+      slider.style.cursor="grab"
+    });
+    slider.addEventListener("mouseup", () => {
+      slider.style.cursor = "grab"
+    });
+
+    window.addEventListener("mouseup", () => {
+      pressed = false
+    });
+
+    slider.addEventListener("mousemove",e=>{
+      if(!pressed)return
+      e.preventDefault()
+      x=e.offsetX
+      bSlider.style.left=`${x-starx}px`
+      checkboundary();
+    });
+    function checkboundary(){
+      let outer=slider.getBoundingClientRect();
+      let inner=bSlider.getBoundingClientRect();
+
+      if(parseInt(bSlider.style.left)>0){
+        bSlider.style.left="0px";
+      }else if(inner.right<outer.right){
+        bSlider.style.left=`-${inner.width-outer.width}px`
+      }
+    }
+    //gps, 날씨 api
+    navigator.geolocation.getCurrentPosition(function(pos) {
+    console.log(pos);
+    var latitude = pos.coords.latitude; 
+    var longitude = pos.coords.longitude; 
+    console.log("현재 위치는 : " + latitude + ", "+ longitude);
+});
+    const API_KEY = "0e157a0c039c33991cc4121e2e911000";
+
+    // 현재 API
+    function onGeoOk(position) {
+   const latitude = position.coords.latitude;
+   const longitude = position.coords.longitude;
+   fetch(
+ `https://api.openweathermap.org/data/2.5/weather?lat=${latitude}&lon=${longitude}&lang=kr&appid=${API_KEY}&units=metric`, 
+   )
+      .then(response => response.json()) //.then promise 수행이될때 실행 되는 것
+      .then(data => console.log(data,`현재 기온 : ${data.main.temp}도, 날씨 : ${data.weather[0].main},바람:${data.wind.speed}`));
+}
+
+//텍스트 입력,아이콘
+
+
+
+
+
+  </script>
+</body>
+</html>
